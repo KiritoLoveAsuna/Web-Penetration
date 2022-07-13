@@ -1,0 +1,18 @@
+--technique
+B,E,Q,U,S,T 直接决定注入类型的改变
+B：布尔型盲注
+E：报错型注入
+Q：内联查询
+U：联合查询
+S：可多个语句查询的注入 对栈查询
+T：基于时间的盲注
+
+语句
+sqlmap.py -u www.xxx.com/xxx.php?id=1 -p id --technique T --time-sec 9 --current-db
+--technique T --time-sec 9指定注入类型为时间盲注，延时时间为9秒
+
+有的web程序会在多次错误访问后屏蔽所有请求，这样就导致之后所有的测试无法进行，绕过这个策略可以使用--safe-url，每隔一段时间去访问一个正常的页面。
+
+布尔盲注:
+--string=query_success
+--not-string=query_error

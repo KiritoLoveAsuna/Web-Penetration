@@ -1,0 +1,255 @@
+# 链接(URL)：https://www.wuyini.cn/672.html
+
+
+XSS (Stored) 存储型跨站脚本
+Low
+Php
+
+<?php
+ 
+if( isset( $_POST[ 'btnSign' ] ) ) {
+    // Get input
+    $message = trim( $_POST[ 'mtxMessage' ] );
+    $name    = trim( $_POST[ 'txtName' ] );
+ 
+    // Sanitize message input
+    $message = stripslashes( $message );
+    $message = ((isset($GLOBALS["___mysqli_ston"]) && is_object($GLOBALS["___mysqli_ston"])) ? mysqli_real_escape_string($GLOBALS["___mysqli_ston"],  $message ) : ((trigger_error("[MySQLConverterToo] Fix the mysql_escape_string() call! This code does not work.", E_USER_ERROR)) ? "" : ""));
+ 
+    // Sanitize name input
+    $name = ((isset($GLOBALS["___mysqli_ston"]) && is_object($GLOBALS["___mysqli_ston"])) ? mysqli_real_escape_string($GLOBALS["___mysqli_ston"],  $name ) : ((trigger_error("[MySQLConverterToo] Fix the mysql_escape_string() call! This code does not work.", E_USER_ERROR)) ? "" : ""));
+ 
+    // Update database
+    $query  = "INSERT INTO guestbook ( comment, name ) VALUES ( '$message', '$name' );";
+    $result = mysqli_query($GLOBALS["___mysqli_ston"],  $query ) or die( '<pre>' . ((is_object($GLOBALS["___mysqli_ston"])) ? mysqli_error($GLOBALS["___mysqli_ston"]) : (($___mysqli_res = mysqli_connect_error()) ? $___mysqli_res : false)) . '</pre>' );
+ 
+    //mysql_close();
+}
+ 
+?>
+payloadJavascript
+
+Name: sqlsec
+Message: <script>alert('XSS')</script>
+可以看到我们的payload直接插入到了数据库中了：
+
+
+测试完成的话为了不影响下面题目的测试，这里建议手动从数据库中删除下这条记录。
+
+trim
+语法Php
+
+trim(string,charlist)
+细节
+
+移除string字符两侧的预定义字符。
+
+参数	描述
+string	必需。规定要检查的字符串。
+charlist	可选。规定从字符串中删除哪些字符
+charlist如果被省略，则移除以下所有字符：
+
+符合	解释
+\0	NULL
+\t	制表符
+\n	换行
+\x0B	垂直制表符
+\r	回车
+空格
+stripslashes
+语法Php
+
+stripslashes(string)
+细节
+
+去除掉string字符的反斜杠\，该函数可用于清理从数据库中或者从 HTML 表单中取回的数据。
+
+mysql_real_escape_string
+语法Php
+
+mysql_real_escape_string(string,connection)
+细节
+
+转义 SQL 语句中使用的字符串中的特殊字符。
+
+参数	描述
+string	必需。规定要转义的字符串。
+connection	可选。规定 MySQL 连接。如果未规定，则使用上一个连接。
+下列字符受影响：
+
+\x00
+\n
+\r
+\
+‘
+“
+\x1a
+以上这些函数都只是对数据库进行了防护，却没有考虑到对XSS进行过滤，所以依然可以正常的来XSS
+
+Medium
+Php
+
+<?php
+ 
+if( isset( $_POST[ 'btnSign' ] ) ) {
+    // Get input
+    $message = trim( $_POST[ 'mtxMessage' ] );
+    $name    = trim( $_POST[ 'txtName' ] );
+ 
+    // Sanitize message input
+    $message = strip_tags( addslashes( $message ) );
+    $message = ((isset($GLOBALS["___mysqli_ston"]) && is_object($GLOBALS["___mysqli_ston"])) ? mysqli_real_escape_string($GLOBALS["___mysqli_ston"],  $message ) : ((trigger_error("[MySQLConverterToo] Fix the mysql_escape_string() call! This code does not work.", E_USER_ERROR)) ? "" : ""));
+    $message = htmlspecialchars( $message );
+ 
+    // Sanitize name input
+    $name = str_replace( '<script>', '', $name );
+    $name = ((isset($GLOBALS["___mysqli_ston"]) && is_object($GLOBALS["___mysqli_ston"])) ? mysqli_real_escape_string($GLOBALS["___mysqli_ston"],  $name ) : ((trigger_error("[MySQLConverterToo] Fix the mysql_escape_string() call! This code does not work.", E_USER_ERROR)) ? "" : ""));
+ 
+    // Update database
+    $query  = "INSERT INTO guestbook ( comment, name ) VALUES ( '$message', '$name' );";
+    $result = mysqli_query($GLOBALS["___mysqli_ston"],  $query ) or die( '<pre>' . ((is_object($GLOBALS["___mysqli_ston"])) ? mysqli_error($GLOBALS["___mysqli_ston"]) : (($___mysqli_res = mysqli_connect_error()) ? $___mysqli_res : false)) . '</pre>' );
+ 
+    //mysql_close();
+}
+ 
+?>
+payload1Javascript
+
+Name: <img src=x onerror=alert('XSS')>
+Message: www.sqlsec.com
+可以看到我们的payload直接插入到了数据库中了：
+
+
+因为name过滤规则的缺陷，同样使用嵌套构造和大小写转换也是可以Bypass的：
+
+paylaod2Javascript
+
+Name: <Script>alert('XSS')</script>
+Message: www.sqlsec.com
+ 
+Name: <s<script>cript>alert('XSS')</script>
+Message: www.sqlsec.com
+测试完成的话为了不影响下面题目的测试，这里建议手动从数据库中删除下这些记录。
+
+addslashes
+语法Php
+
+addslashes(string)
+细节
+
+返回在预定义字符之前添加反斜杠的字符串。
+
+预定义字符是：
+
+单引号（’）
+双引号（”）
+反斜杠（\）
+NULL
+strip_tags
+语法Php
+
+strip_tags(string,allow)
+细节
+
+剥去字符串中的 HTML、XML 以及 PHP 的标签。
+
+参数	描述
+string	必需。规定要检查的字符串。
+allow	可选。规定允许的标签。这些标签不会被删除。
+htmlspecialchars
+语法Php
+
+htmlspecialchars(string,flags,character-set,double_encode)
+细节
+
+把预定义的字符转换为 HTML 实体。
+
+预定义的字符是：
+
+& （和号）成为 &
+“ （双引号）成为 "
+‘ （单引号）成为 ‘
+< （小于）成为 <
+> （大于）成为 >
+message 变量几乎把所有的XSS都给过滤了，但是name变量只是过滤了``标签而已，我们依然可以在name参数尝试使用其他的标签配合事件来触发弹窗。
+
+name的input输入文本框限制了长度：Html
+
+<input name="txtName" size="30" maxlength="10" type="text">
+审查元素手动将maxlength的值调大一点就可以了。Html
+
+<input name="txtName" size="50" maxlength="50" type="text">
+
+High
+Php
+
+<?php
+ 
+if( isset( $_POST[ 'btnSign' ] ) ) {
+    // Get input
+    $message = trim( $_POST[ 'mtxMessage' ] );
+    $name    = trim( $_POST[ 'txtName' ] );
+ 
+    // Sanitize message input
+    $message = strip_tags( addslashes( $message ) );
+    $message = ((isset($GLOBALS["___mysqli_ston"]) && is_object($GLOBALS["___mysqli_ston"])) ? mysqli_real_escape_string($GLOBALS["___mysqli_ston"],  $message ) : ((trigger_error("[MySQLConverterToo] Fix the mysql_escape_string() call! This code does not work.", E_USER_ERROR)) ? "" : ""));
+    $message = htmlspecialchars( $message );
+ 
+    // Sanitize name input
+    $name = preg_replace( '/<(.*)s(.*)c(.*)r(.*)i(.*)p(.*)t/i', '', $name );
+    $name = ((isset($GLOBALS["___mysqli_ston"]) && is_object($GLOBALS["___mysqli_ston"])) ? mysqli_real_escape_string($GLOBALS["___mysqli_ston"],  $name ) : ((trigger_error("[MySQLConverterToo] Fix the mysql_escape_string() call! This code does not work.", E_USER_ERROR)) ? "" : ""));
+ 
+    // Update database
+    $query  = "INSERT INTO guestbook ( comment, name ) VALUES ( '$message', '$name' );";
+    $result = mysqli_query($GLOBALS["___mysqli_ston"],  $query ) or die( '<pre>' . ((is_object($GLOBALS["___mysqli_ston"])) ? mysqli_error($GLOBALS["___mysqli_ston"]) : (($___mysqli_res = mysqli_connect_error()) ? $___mysqli_res : false)) . '</pre>' );
+ 
+    //mysql_close();
+}
+ 
+?>
+message变量依然是没有什么希望，重点分析下name变量，发现仅仅使用了如下规则来过滤，所以依然可以使用其他的标签来Bypass：Javascript
+
+$name = preg_replace( '/<(.*)s(.*)c(.*)r(.*)i(.*)p(.*)t/i', '', $name );
+payloadJavascript
+
+Name: <img src=x onerror=alert('XSS')>
+Message: www.sqlsec.com
+
+Impossible
+Php
+
+<?php
+ 
+if( isset( $_POST[ 'btnSign' ] ) ) {
+    // Check Anti-CSRF token
+    checkToken( $_REQUEST[ 'user_token' ], $_SESSION[ 'session_token' ], 'index.php' );
+ 
+    // Get input
+    $message = trim( $_POST[ 'mtxMessage' ] );
+    $name    = trim( $_POST[ 'txtName' ] );
+ 
+    // Sanitize message input
+    $message = stripslashes( $message );
+    $message = ((isset($GLOBALS["___mysqli_ston"]) && is_object($GLOBALS["___mysqli_ston"])) ? mysqli_real_escape_string($GLOBALS["___mysqli_ston"],  $message ) : ((trigger_error("[MySQLConverterToo] Fix the mysql_escape_string() call! This code does not work.", E_USER_ERROR)) ? "" : ""));
+    $message = htmlspecialchars( $message );
+ 
+    // Sanitize name input
+    $name = stripslashes( $name );
+    $name = ((isset($GLOBALS["___mysqli_ston"]) && is_object($GLOBALS["___mysqli_ston"])) ? mysqli_real_escape_string($GLOBALS["___mysqli_ston"],  $name ) : ((trigger_error("[MySQLConverterToo] Fix the mysql_escape_string() call! This code does not work.", E_USER_ERROR)) ? "" : ""));
+    $name = htmlspecialchars( $name );
+ 
+    // Update database
+    $data = $db->prepare( 'INSERT INTO guestbook ( comment, name ) VALUES ( :message, :name );' );
+    $data->bindParam( ':message', $message, PDO::PARAM_STR );
+    $data->bindParam( ':name', $name, PDO::PARAM_STR );
+    $data->execute();
+}
+ 
+// Generate Anti-CSRF token
+generateSessionToken();
+ 
+?>
+message和name变量都进行了严格的过滤，而且还检测了用户的token：Php
+
+checkToken( $_REQUEST[ 'user_token' ], $_SESSION[ 'session_token' ], 'index.php' );
+有效地防止了CSRF的攻击

